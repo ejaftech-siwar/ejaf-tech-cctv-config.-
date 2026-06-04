@@ -13,8 +13,8 @@
         :root { 
             /* التدرج الذهبي المعدني الاحترافي */
             --gold-bg: linear-gradient(135deg, #bf953f, #fcf6ba, #b38728, #fbf5b7, #aa771c); 
-            --royal-blue: #1e3a8a; /* الأزرق الملكي للوغو والنصوص الرئيسية */
-            --dark-blue: #0f172a; /* كحلي غامق للأزرار */
+            --royal-blue: #1e3a8a; 
+            --dark-blue: #0f172a; 
             --danger: #dc2626;
             --success: #10b981;
             --border-color: #cbd5e1;
@@ -93,6 +93,7 @@
                     <option value="Hikvision">Hikvision</option>
                     <option value="Dahua">Dahua</option>
                     <option value="Huawei">Huawei Technologies</option>
+                    <option value="HOLOWITS" style="font-weight: bold; color: var(--royal-blue);">HOLOWITS (Huawei Intelligent Vision)</option>
                     <option value="Bosch">Bosch Security Systems</option>
                     <option value="Hanwha">Hanwha Vision (Samsung)</option>
                     <option value="Uniview">Uniview (UNV)</option>
@@ -129,7 +130,7 @@
             </div>
             <div>
                 <label>Camera Model Number</label>
-                <input type="text" id="model" placeholder="e.g. IPC6225-VRZ or DS-2CD2143G0-I">
+                <input type="text" id="model" placeholder="e.g. IPC6225-VRZ, DS-2CD2143, HWT-IVS1800">
             </div>
         </div>
 
@@ -211,6 +212,12 @@
             inst: "<b>Utility Required:</b> IPC Configuration Tool / iClient<br>1. Boot nodes. Factory native addressing defaults to 192.168.0.120.<br>2. Force administrative credential reconfiguration on initial handshake interface.<br>3. Leverage iClient operational deployment workspace for scalable network map population.",
             ts: "<b>Symptom:</b> Web browser rendering engine web-plugin blockages.<br><b>Mitigation:</b> Deploy native Edge Internet Explorer Enterprise compatibility rendering layout or pivot execution via thick OS native management software client."
         },
+        /* تم دمج بيانات HOLOWITS التقنية هنا */
+        "HOLOWITS": {
+            ds: "https://www.holowits.com/support/search?keyword=",
+            inst: "<b>Utility Required:</b> HOLOWITS EasyTool / iClient Deployer<br>1. Connect cameras to the network infrastructure.<br>2. Default IP Address is universally <b>192.168.0.120</b> (192.168.0.100 for NVRs).<br>3. Use batch activation tools to set passwords. <i>Note: Ensure camera passwords strictly match the NVR's startup password for automatic ONVIF binding.</i><br>4. Re-assign IPs in batch to avoid collisions.",
+            ts: "<b>Symptom:</b> Total network failure / IP Address conflict during mass deployment.<br><b>Mitigation:</b> Do not connect multiple unconfigured cameras to a Layer 2 switch simultaneously. Connect and change 192.168.0.120 iteratively, or use the EasyTool batch IP modification feature immediately.<br><br><b>Symptom:</b> Factory reset failure via hardware button.<br><b>Mitigation:</b> Ensure physical network cable is disconnected before pressing reset for 15s to avoid subnet conflicts on reboot."
+        },
         "Bosch": {
             ds: "https://commerce.boschsecurity.com/en/search/?text=",
             inst: "<b>Utility Required:</b> Bosch Configuration Manager<br>1. Interrogate segment via IP Helper or Configuration Manager engine.<br>2. Bosch nodes automatically fallback onto local Link-Local (169.254.x.x) or DHCP tables.<br>3. Elevate security session state to 'Service level authentication' -> map permanent fixed addresses.",
@@ -238,16 +245,14 @@
         }
     };
 
-    // الموديول المحدث لإجبار الكاميرا الخلفية (Environment)
     function initScanner() {
         document.getElementById('reader').style.display = 'block';
         
-        // إعداد استدعاء الكاميرا مع إجبار الاستخدام الخلفي لمنع الكاميرا الأمامية
         const html5QrCode = new Html5Qrcode("reader");
         const config = { fps: 15, qrbox: { width: 320, height: 150 } };
         
         html5QrCode.start(
-            { facingMode: "environment" }, // إجبار الكاميرا الخلفية
+            { facingMode: "environment" }, 
             config,
             (decodedText) => {
                 document.getElementById('model').value = decodedText;
@@ -257,7 +262,7 @@
                 });
             },
             (errorMessage) => {
-                // تتبع الأكواد مستمر بالخلفية
+                // Background tracking
             }
         ).catch((err) => {
             alert("Camera initialization failed. Please ensure you are using HTTPS on GitHub.");

@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ejaf Tech - Engineering Master Tool</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://unpkg.com/html5-qrcode"></script>
+    
+    <style>
+        :root { 
+            --gold-bg: linear-gradient(135deg, #bf953f, #fcf6ba, #b38728, #fbf5b7, #aa771c); 
+            --royal-blue: #0f172a; 
+            --danger: #dc2626;
+            --success: #10b981;
+            --border-color: #cbd5e1;
+        }
+        body { font-family: 'Inter', sans-serif; background: #f8fafc; margin: 0; padding: 20px; color: #1e293b; }
+        .wrapper { max-width: 1000px; margin: auto; background: #fff; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); overflow: hidden; }
+        
+        /* Premium Header */
+        .header { background: var(--gold-bg); padding: 40px 20px; text-align: center; border-bottom: 5px solid var(--royal-blue); }
+        .header h1 { color: var(--royal-blue); margin: 0; font-size: 42px; text-transform: uppercase; letter-spacing: 1px; font-weight: 800; }
+        .header p { color: #4a3700; font-weight: 700; margin-top: 5px; font-size: 15px; text-transform: uppercase; letter-spacing: 2px; }
+        .header p span { color: var(--danger); background: rgba(255,255,255,0.4); padding: 2px 8px; border-radius: 4px; }
+        
+        .content { padding: 40px; }
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; margin-bottom: 24px; }
+        label { font-weight: 600; font-size: 14px; margin-bottom: 8px; display: block; color: var(--royal-blue); }
+        input, select { width: 100%; padding: 12px 16px; border: 1px solid var(--border-color); border-radius: 8px; box-sizing: border-box; font-size: 15px; outline: none; background: #fdfdfd; transition: all 0.2s; }
+        input:focus, select:focus { border-color: var(--royal-blue); box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.1); background: #fff; }
+        
+        /* Interactive Elements */
+        .btn { background: var(--royal-blue); color: #fff; padding: 14px 24px; border: none; width: 100%; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 16px; margin-top: 10px; transition: all 0.2s; }
+        .btn:hover { opacity: 0.95; transform: translateY(-1px); }
+        .btn-scanner { background: #d4af37; color: var(--royal-blue); margin-bottom: 25px; border: 1px dashed var(--royal-blue); }
+        .btn-excel { background: var(--success); width: auto; }
+        .btn-excel:hover { background: #059669; }
+        .btn-pdf { background: var(--danger); width: auto; }
+        .btn-pdf:hover { background: #b91c1c; }
+        
+        #reader { width: 100%; max-width: 450px; margin: 0 auto 25px; border-radius: 12px; overflow: hidden; display: none; border: 2px solid var(--border-color); }
+        
+        /* Dynamic Report Engine */
+        .results-section { margin-top: 40px; border-top: 2px dashed var(--border-color); padding-top: 30px; display: none; }
+        .section-title { font-size: 22px; font-weight: 700; color: var(--royal-blue); margin-bottom: 20px; }
+        .info-card { background: #f8fafc; padding: 20px; border-left: 4px solid var(--royal-blue); border-radius: 0 8px 8px 0; margin-bottom: 20px; font-size: 15px; line-height: 1.6; }
+        .info-card.warning { border-left-color: var(--danger); background: #fef2f2; }
+        
+        .datasheet-link { display: inline-block; background: #e0f2fe; color: #0369a1; padding: 12px 20px; border-radius: 8px; text-decoration: none; font-weight: 600; margin-bottom: 25px; border: 1px solid #bae6fd; transition: 0.2s; }
+        .datasheet-link:hover { background: #bae6fd; }
+        
+        /* Custom Modern Table */
+        .table-responsive { overflow-x: auto; margin: 25px 0; border-radius: 8px; border: 1px solid var(--border-color); }
+        table { width: 100%; border-collapse: collapse; min-width: 750px; text-align: left; font-size: 14px; }
+        th { background: #f1f5f9; padding: 14px; border-bottom: 2px solid var(--border-color); font-weight: 600; color: var(--royal-blue); }
+        td { padding: 14px; border-bottom: 1px solid var(--border-color); color: #334155; }
+        tr:last-child td { border-bottom: none; }
+        .action-hub { display: flex; gap: 15px; justify-content: center; margin-top: 30px; flex-wrap: wrap; }
+    </style>
+</head>
+<body>
+
+<div class="wrapper" id="app-content">
+    <div class="brand-header">
+        <h1>Ejaf Technology</h1>
+        <p>Powered by <span>Siwar</span></p>
+    </div>
+    
+    <div class="content">
+        <button class="btn btn-scanner" onclick="initScanner()">📷 Launch AI Barcode / QR Scanner</button>
+        <div id="reader"></div>
+
+        <div class="form-grid">
+            <div>
+                <label>Camera Brand (Hardware Profile)</label>
+                <select id="brand">
+                    <option value="Hikvision">Hikvision</option>
+                    <option value="Dahua">Dahua</option>
+                    <option value="Huawei">Huawei Technologies</option>
+                    <option value="Bosch">Bosch Security Systems</option>
+                    <option value="Hanwha">Hanwha Vision (Samsung)</option>
+                    <option value="Uniview">Uniview (UNV)</option>
+                    <option value="Axis">Axis Communications</option>
+                    <option value="Pelco">Pelco</option>
+                </select>
+            </div>
+            <div>
+                <label>System Topology / Infrastructure Type</label>
+                <select id="system">
+                    <option value="Standard PoE Switch">Standard PoE Switch (802.3af/at Layer 2/3)</option>
+                    <option value="High Power PoE Switch">High Power PoE++ Switch (For PTZ/Heaters)</option>
+                    <option value="Direct to NVR Ports">Direct to NVR Built-In PoE Ports (Plug & Play)</option>
+                    <option value="Distributed IVS / VMS Server">Distributed IVS / VMS Server System</option>
+                    <option value="Fiber Optic Infrastructure">Fiber Optic Infrastructure (SFP Modules / Media Conv.)</option>
+                    <option value="Wireless Bridge Link">Wireless Bridge / Point-to-Point (PtP) Link</option>
+                </select>
+            </div>
+        </div>
+        
+        <div class="form-grid">
+            <div>
+                <label>Network Switch Vendor</label>
+                <select id="swBrand">
+                    <option value="Cisco">Cisco Systems</option>
+                    <option value="Huawei">Huawei Enterprise</option>
+                    <option value="TP-Link">TP-Link Enterprise</option>
+                    <option value="Planet">Planet Technology</option>
+                    <option value="HP Aruba">HP Aruba Networking</option>
+                    <option value="MikroTik">MikroTik RouterOS</option>
+                    <option value="Netgear">Netgear Business</option>
+                    <option value="NVR Embedded NIC">None (Using NVR Internal Embedded Switch)</option>
+                </select>
+            </div>
+            <div>
+                <label>Camera Model Number</label>
+                <input type="text" id="model" placeholder="e.g. IPC6225-VRZ or DS-2CD2143G0-I">
+            </div>
+        </div>
+
+        <div class="form-grid">
+            <div>
+                <label>Deployment Quantity (Total Nodes)</label>
+                <input type="number" id="qty" value="1" min="1">
+            </div>
+            <div>
+                <label>Base Subnet IP Address Plan</label>
+                <input type="text" id="base_ip" value="192.168.1.100">
+            </div>
+        </div>
+
+        <button class="btn" style="font-size:18px;" onclick="generateReport()">⚙️ Process & Initialize Provisioning Engine</button>
+
+        <div id="results" class="results-section">
+            <div class="section-title">Deployment Intelligence Report</div>
+            
+            <a href="#" id="res_datasheet" class="datasheet-link" target="_blank">📄 Open Live Manufacturer Datasheet Search</a>
+
+            <label>Infrastructure Integration & Topology Matrix</label>
+            <div id="res_system_notes" class="info-card"></div>
+
+            <label>Field Engineer Step-by-Step Commissioning Setup</label>
+            <div id="res_instructions" class="info-card" style="border-left-color: var(--success); background: #f0fdf4;"></div>
+
+            <label>Predictive Troubleshooting Matrix & Mitigation Paths</label>
+            <div id="res_troubleshooting" class="info-card warning"></div>
+
+            <label>Automated Node IP Addressing Allocation Plan</label>
+            <div class="table-responsive">
+                <table id="tbl">
+                    <thead>
+                        <tr>
+                            <th>Node ID</th>
+                            <th>Hardware Profile</th>
+                            <th>Infrastructure Topology</th>
+                            <th>Network Vendor</th>
+                            <th>Allocated IPv4</th>
+                            <th>Physical Port Mapping</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+
+            <div class="action-hub">
+                <button class="btn btn-excel" onclick="exportXls()">📊 Export Master Excel Sheet</button>
+                <button class="btn btn-pdf" onclick="exportPdf()">📄 Generate Engineering PDF Report</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Global Standards Infrastructure Notes
+    const systemNotes = {
+        "Standard PoE Switch": "Standard Layer 2/3 topology. Ensure the total PoE budget of the switch handles 15W-30W per active node safely.",
+        "High Power PoE Switch": " PTZ/Thermal infrastructure deployment. Enforce 802.3bt (60W-90W) active mapping on ports.",
+        "Direct to NVR Ports": "Isolated internal NIC environment. NVR embedded DHCP server handles all addressing. Manual camera IPs will be overridden.",
+        "Distributed IVS / VMS Server": "Enterprise datacenter routing. Nodes must bypass local restrictions, open core VMS listening ports, and sync NTP clocks directly with the server.",
+        "Fiber Optic Infrastructure": "Extended distance backhaul. Ensure matching SFP optical wavelengths (TX/RX matching) and install stable local raw auxiliary power.",
+        "Wireless Bridge Link": "Point-to-Point architecture. Ensure perfect clear line of sight (LOS) clearing the Fresnel Zone to avoid immediate packet loss."
+    };
+
+    // Global Brand Engineering Intelligence Core
+    const db = {
+        "Hikvision": {
+            ds: "https://www.hikvision.com/en/search/?q=",
+            inst: "<b>Utility Required:</b> Hikvision SADP Tool<br>1. Connect nodes to network.<br>2. Run SADP, isolate status: 'Inactive'.<br>3. Commit secure alphanumeric master authentication password.<br>4. <b>Batch Config (50+):</b> Check global multi-select, append baseline address block, input master passphrase, execute 'Modify Network Parameters'.",
+            ts: "<b>Symptom:</b> Discovery failure via SADP.<br><b>Mitigation:</b> Force-close host Windows firewall profiles, isolate interface network adapters, confirm local VLAN binding.<br><br><b>Symptom:</b> Packet drops or RTSP stream lagging on NVR.<br><b>Mitigation:</b> Inject H.265+ Smart Codec, enforce Variable Bitrate (VBR) management limits."
+        },
+        "Dahua": {
+            ds: "https://www.dahuasecurity.com/search?keyword=",
+            inst: "<b>Utility Required:</b> Dahua ConfigTool<br>1. Run global broad broadcast sweep via ConfigTool.<br>2. Filter uninitialized nodes -> execute master 'Initialization Wizard'.<br>3. Bind structural password and administrative retrieval email.<br>4. <b>Batch Operations:</b> Trigger 'Batch Modify IP' component mapping sequential nodes.",
+            ts: "<b>Symptom:</b> Node displays Offline / Auth-Error on VMS/NVR.<br><b>Mitigation:</b> Verify camera login table credentials explicitly match the corresponding channel mapping configurations on back-end systems."
+        },
+        "Huawei": {
+            ds: "https://e.huawei.com/en/search?searchWord=",
+            inst: "<b>Utility Required:</b> IPC Configuration Tool / iClient<br>1. Boot nodes. Factory native addressing defaults to 192.168.0.120.<br>2. Force administrative credential reconfiguration on initial handshake interface.<br>3. Leverage iClient operational deployment workspace for scalable network map population.",
+            ts: "<b>Symptom:</b> Web browser rendering engine web-plugin blockages.<br><b>Mitigation:</b> Deploy native Edge Internet Explorer Enterprise compatibility rendering layout or pivot execution via thick OS native management software client."
+        },
+        "Bosch": {
+            ds: "https://commerce.boschsecurity.com/en/search/?text=",
+            inst: "<b>Utility Required:</b> Bosch Configuration Manager<br>1. Interrogate segment via IP Helper or Configuration Manager engine.<br>2. Bosch nodes automatically fallback onto local Link-Local (169.254.x.x) or DHCP tables.<br>3. Elevate security session state to 'Service level authentication' -> map permanent fixed addresses.",
+            ts: "<b>Symptom:</b> Parameter write-commands rejected or blocked.<br><b>Mitigation:</b> Re-verify current session status level. Elevated 'Service' credentials are functionally mandatory to write changes to flash memory."
+        },
+        "Hanwha": {
+            ds: "https://hanwhavision.com/en/search/?q=",
+            inst: "<b>Utility Required:</b> Wisenet Device Manager<br>1. Initialize network scan topology (Default structural IP: 192.168.1.100).<br>2. Batch select active discovered node list, trigger systemic credential injection.<br>3. Execute automated indexing distribution via the 'IP Assign' dynamic mapping panel.",
+            ts: "<b>Symptom:</b> Sensor pixel artifacts or chrominance distortion in low-lux conditions.<br><b>Mitigation:</b> Navigate to specialized DSP algorithms inside camera operating system -> Toggle SSNR (Samsung Super Noise Reduction) engine optimization thresholds."
+        },
+        "Uniview": {
+            ds: "https://www.uniview.com/Search/?q=",
+            inst: "<b>Utility Required:</b> EZTools<br>1. Execute local subnet broadcast discovery via EZTools.<br>2. Target out-of-box native parameters (Factory default IP: 192.168.1.13).<br>3. Select bulk target array, confirm admin context, deploy 'Batch Configuration Network Allocation Matrix'.",
+            ts: "<b>Symptom:</b> Unprovoked transient node packet drop drops or link flapping.<br><b>Mitigation:</b> Cross-reference edge port PoE load drawing characteristics against hardware specifications. Apply manual flash update if memory leaks are localized via tool."
+        },
+        "Axis": {
+            ds: "https://www.axis.com/search?q=",
+            inst: "<b>Utility Required:</b> AXIS IP Utility / AXIS Device Manager<br>1. Ensure switch infrastructure registers link pulse.<br>2. Interrogate hardware layer using AXIS IP Utility engine.<br>3. Trigger direct browser connection interface session -> input modern secure root dictionary password profile.",
+            ts: "<b>Symptom:</b> Network discovery failure over multi-tier routing architecture.<br><b>Mitigation:</b> Physically trigger localized hardware deep-reset sequence by latching operational micro-switch for 15 seconds. Retry discovery via IP Utility tool."
+        },
+        "Pelco": {
+            ds: "https://www.pelco.com/?s=",
+            inst: "<b>Utility Required:</b> Pelco Device Utility (PDU)<br>1. Connect cameras.<br>2. Open PDU to scan (Default IP: 192.168.0.20 or DHCP).<br>3. Double click to launch web UI and configure.",
+            ts: "<b>Symptom:</b> PTZ telemetry unresponsive during high wind / extreme operations.<br><b>Mitigation:</b> Verify edge port interface delivery state. High-performance mechanical assemblies like Pelco Spectra architectures fail selectively if limited below 60W PoE++ specs."
+        }
+    };
+
+    // AI Scanner Engine Initialization
+    let html5QrcodeScanner;
+    function initScanner() {
+        document.getElementById('reader').style.display = 'block';
+        if(!html5QrcodeScanner) {
+            html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 15, qrbox: {width: 280, height: 120} });
+            html5QrcodeScanner.render((text) => {
+                document.getElementById('model').value = text;
+                document.getElementById('reader').style.display = 'none';
+                html5QrcodeScanner.clear();
+                alert("AI Processing Unit Matched Model: " + text);
+            }, (error) => {
+                // Fail-safe tracking for matrix adjustments
+            });
+        }
+    }
+
+    // Main Engine Process Data Mapping
+    function generateReport() {
+        const brand = document.getElementById('brand').value;
+        const systemType = document.getElementById('system').value;
+        const swBrand = document.getElementById('swBrand').value;
+        const model = document.getElementById('model').value || "Global Profile Node";
+        const qty = parseInt(document.getElementById('qty').value) || 1;
+        let baseIpStr = document.getElementById('base_ip').value;
+        
+        const intel = db[brand];
+        
+        // Populate System Matrix
+        document.getElementById('res_datasheet').href = intel.ds + encodeURIComponent(model);
+        document.getElementById('res_system_notes').innerHTML = `<b>Topology Protocol:</b> ` + systemNotes[systemType];
+        document.getElementById('res_instructions').innerHTML = intel.inst;
+        document.getElementById('res_troubleshooting').innerHTML = intel.ts;
+        
+        // Run Dynamic IP Assignment Loops
+        const tbody = document.querySelector('#tbl tbody');
+        tbody.innerHTML = ''; 
+        
+        let ipParts = baseIpStr.split('.');
+        if (ipParts.length !== 4) {
+            alert("Subnet Matrix Error: Invalid IPv4 Scheme formatting.");
+            return;
+        }
+        let lastOctet = parseInt(ipParts[3]);
+        
+        for(let i = 0; i < qty; i++) {
+            let currentIp = `${ipParts[0]}.${ipParts[1]}.${ipParts[2]}.${lastOctet + i}`;
+            
+            // Check architectural exceptions
+            if (systemType === "Direct to NVR Ports") {
+                currentIp = `Dynamic DHCP (Internal NVR NIC Subnet - Port ${i+1})`;
+            }
+
+            let row = `<tr>
+                <td><b>Node-${(i + 1).toString().padStart(3, '0')}</b></td>
+                <td>${brand} [${model}]</td>
+                <td>${systemType}</td>
+                <td>${swBrand}</td>
+                <td style="color: #0369a1; font-weight: bold;">${currentIp}</td>
+                <td style="color: #64748b; font-style: italic;">Rack Target Assigned</td>
+            </tr>`;
+            tbody.innerHTML += row;
+        }
+        
+        // Launch Presentation Layer
+        document.getElementById('results').style.display = 'block';
+        document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    // Export Hub Actions
+    function exportXls() {
+        let wb = XLSX.utils.table_to_book(document.getElementById('tbl'), {sheet:"Infrastructure Plan"});
+        XLSX.writeFile(wb, "EjafTech_Master_Deployment_Plan.xlsx");
+    }
+
+    function exportPdf() {
+        const element = document.getElementById('app-content');
+        const opt = {
+            margin:       0.25,
+            filename:     'EjafTech_Engineering_Report.pdf',
+            image:        { type: 'jpeg', quality: 1.0 },
+            html2canvas:  { scale: 2 },
+            jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
+        };
+        html2pdf().set(opt).from(element).save();
+    }
+</script>
+</body>
+</html>
